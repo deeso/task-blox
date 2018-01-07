@@ -1,0 +1,6 @@
+[elksubmitjson]
+    task = 'elksubmitjson'
+    name = 'suricata-logs'
+    poll-time = 20
+    host = 'docker-dev'
+    port = 5002

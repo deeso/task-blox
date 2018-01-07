@@ -1,0 +1,4 @@
+[rmfiles]
+    task = 'rmfiles'
+    name = 'suricata-logs'
+    poll-time = 20

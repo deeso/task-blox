@@ -1,0 +1,6 @@
+[dirchecker]
+    task = 'dirchecker'
+    name = 'suricata-logs'
+    target-directory = '/var/logs/suricata/'
+    name-pattern = '.*eve-\d{4}-\d{2}-\d{2}-\d{2}:\d{2}\.json'
+    poll-time = 20
