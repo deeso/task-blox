@@ -4,7 +4,7 @@ from os.rmfiles import RmFiles
 from parse.readjsonfile import ReadJsonFile
 
 
-TASK_BLOX = {
+TASK_BLOX_MAPPER = {
     ElkSubmitJson.name(): ElkSubmitJson,
     DirChecker.name(): DirChecker,
     RmFiles.name(): RmFiles,
