@@ -57,11 +57,6 @@ class DirChecker(object):
             self.proc.terminate()
         self.proc.join()
 
-    def set_queues(self, cmd_queue, out_queue):
-        if not self.is_running():
-            self.cmd_queue = cmd_queue
-            self.out_queue = out_queue
-
     @classmethod
     def read_inqueue(cls, queue):
         if queue.empty():
@@ -143,4 +138,7 @@ class DirChecker(object):
         target_directory = toml_dict.get('target-directory', None)
         name_pattern = toml_dict.get('name-pattern', None)
         poll_time = toml_dict.get('poll-time', 20)
-        return cls(target_directory, name_pattern, poll_time)
+        name = toml_dict.get('name', None)
+        return cls(target_directory,
+                   name_pattern=name_pattern,
+                   poll_time=poll_time, name=name)

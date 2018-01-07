@@ -100,5 +100,6 @@ class ReadJsonFile(object):
 
     @classmethod
     def from_toml(cls, toml_dict):
-        poll_time = toml_dict.get('poll_time', 20)
-        return cls(poll_time)
+        poll_time = toml_dict.get('poll-time', 20)
+        name = toml_dict.get('name', None)
+        return cls(poll_time=poll_time, name=name)

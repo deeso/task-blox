@@ -117,5 +117,6 @@ class ElkSubmitJson(object):
     def from_toml(cls, toml_dict):
         host = toml_dict.get('host', '')
         port = toml_dict.get('port', 5002)
-        poll_time = toml_dict.get('poll_time', 20)
-        return cls(host, port, poll_time)
+        poll_time = toml_dict.get('poll-time', 20)
+        name = toml_dict.get('name', None)
+        return cls(host, port, poll_time=poll_time, name=name)
