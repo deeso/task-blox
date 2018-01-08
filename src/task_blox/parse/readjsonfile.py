@@ -19,10 +19,10 @@ class ReadJsonFile(object):
         self.proc = None
 
     def read_outqueue(self):
-        filenames = []
+        data = []
         while not self.out_queue.empty():
-            filenames.append(self.out_queue.get())
-        return filenames
+            data.append(self.out_queue.get())
+        return data
 
     def start(self):
         args = [
@@ -88,12 +88,16 @@ class ReadJsonFile(object):
                             data = json.loads(line)
                             json_lines.append(data)
                             if len(json_lines) > 200:
-                                out_queue.put({'json_lines': json_lines})
+                                out_queue.put({'json_lines': json_lines,
+                                               'filename': filename,
+                                               'status': 'incomplete'})
                                 json_lines = []
                         except:
                             pass
 
-                out_queue.put({'json_lines': json_lines})
+                out_queue.put({'json_lines': json_lines,
+                               'filename': filename,
+                               'status': 'incomplete'})
 
             if in_queue.empty():
                 time.sleep(poll_time)

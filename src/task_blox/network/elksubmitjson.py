@@ -22,10 +22,10 @@ class ElkSubmitJson(object):
         self.proc = None
 
     def read_outqueue(self):
-        filenames = []
+        data = []
         while not self.out_queue.empty():
-            filenames.append(self.out_queue.get())
-        return filenames
+            data.append(self.out_queue.get())
+        return data
 
     def start(self):
         args = [
@@ -55,15 +55,15 @@ class ElkSubmitJson(object):
             self.proc.terminate()
         self.proc.join()
 
-    def add_json_string(self, json_str):
+    def add_json_string(self, tid, json_str):
         json_data = json.loads(json_str)
-        self.cmd_queue.put({'json_data': json_data})
+        self.cmd_queue.put({'json_data': json_data, 'tid': tid})
 
-    def add_json_data(self, json_data):
-        self.cmd_queue.put({'json_data': json_data})
+    def add_json_data(self, tid, json_data):
+        self.cmd_queue.put({'json_data': json_data, 'tid': tid})
 
-    def add_json_datas(self, json_datas):
-        self.cmd_queue.put({'json_datas': json_datas})
+    def add_json_datas(self, tid, json_datas):
+        self.cmd_queue.put({'json_datas': json_datas, 'tid': tid})
 
     @classmethod
     def read_inqueue(cls, queue):
@@ -103,12 +103,21 @@ class ElkSubmitJson(object):
             if cls.check_for_quit(d):
                 break
 
-            if 'json_data' in d:
-                json_data = d.get('json_data')
+            status = 'success'
+            json_datas = d.get('json_datas', None)
+            json_data = d.get('json_data', None)
+            if json_data is not None:
+                json_datas = [json_data, ]
+
+            for json_data in json_datas:
                 try:
                     cls.send_udp_json_line(host, port, json_data)
                 except:
-                    pass
+                    status = 'error'
+                    break
+
+            out_queue.put({'tid': d.get('tid', None),
+                           'status': status})
 
             if in_queue.empty():
                 time.sleep(poll_time)

@@ -24,10 +24,10 @@ class DirChecker(object):
         self.proc = None
 
     def read_outqueue(self):
-        filenames = []
+        data = []
         while not self.out_queue.empty():
-            filenames.append(self.out_queue.get())
-        return filenames
+            data.append(self.out_queue.get())
+        return data
 
     def start(self):
         args = [

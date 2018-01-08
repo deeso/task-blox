@@ -5,8 +5,8 @@ from parse.readjsonfile import ReadJsonFile
 
 
 TASK_BLOX_MAPPER = {
-    ElkSubmitJson.name(): ElkSubmitJson,
-    DirChecker.name(): DirChecker,
-    RmFiles.name(): RmFiles,
-    ReadJsonFile.name(): ReadJsonFile,
+    ElkSubmitJson.key(): ElkSubmitJson,
+    DirChecker.key(): DirChecker,
+    RmFiles.key(): RmFiles,
+    ReadJsonFile.key(): ReadJsonFile,
 }
