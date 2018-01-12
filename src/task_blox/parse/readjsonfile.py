@@ -1,7 +1,8 @@
 import time
 from multiprocessing import Queue, Process
 import json
-
+import mimetypes
+import gzip
 
 class ReadJsonFile(object):
     KEY = 'ReadJsonFile'
@@ -71,6 +72,16 @@ class ReadJsonFile(object):
         return quit
 
     @classmethod
+    def open_file(cls, filename):
+        ft = mimetypes.guess_type(filename)
+        if ft[0] == 'application/json':
+            return open(filename)
+        elif ft[1] == 'gzip':
+            return Gzip(filename)
+        return None
+
+
+    @classmethod
     def read_json_file(cls, poll_time, in_queue, out_queue):
 
         while True:
@@ -80,10 +91,10 @@ class ReadJsonFile(object):
 
             if 'filename' in d:
                 filename = d.get('filename', None)
-
-                with open(filename) as infile:
-                    json_lines = []
-                    for line in infile.lines():
+                json_lines = []
+                infile = cls.open_file(filename)
+                if infile is not None:
+                    for line in infile.readlines():
                         try:
                             data = json.loads(line)
                             json_lines.append(data)
@@ -94,10 +105,11 @@ class ReadJsonFile(object):
                                 json_lines = []
                         except:
                             pass
+                    infile.close()
 
                 out_queue.put({'json_lines': json_lines,
                                'filename': filename,
-                               'status': 'incomplete'})
+                               'status': 'complete'})
 
             if in_queue.empty():
                 time.sleep(poll_time)

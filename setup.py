@@ -5,7 +5,7 @@ from setuptools import setup, find_packages
 DEPENDENCY_LINKS = [
 ]
 
-DESC ='Python configurable task library for common things'
+DESC = 'Python configurable task library for common things'
 setup(name='json-file-consumer',
       version='1.0',
       description=DESC,
@@ -15,4 +15,4 @@ setup(name='json-file-consumer',
       packages=find_packages('src'),
       package_dir={'': 'src'},
       dependency_links=DEPENDENCY_LINKS,
-)
+      )
