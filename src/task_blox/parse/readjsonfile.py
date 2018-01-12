@@ -2,7 +2,9 @@ import time
 from multiprocessing import Queue, Process
 import json
 import mimetypes
-import gzip
+from gzip import GzipFile
+from task_blox import logger
+
 
 class ReadJsonFile(object):
     KEY = 'ReadJsonFile'
@@ -26,6 +28,7 @@ class ReadJsonFile(object):
         return data
 
     def start(self):
+        logger.info("Starting %s" % self.key())
         args = [
             self.poll_time,
             self.cmd_queue,
@@ -48,6 +51,7 @@ class ReadJsonFile(object):
         self.cmd_queue.put({'filename': filename})
 
     def stop(self):
+        logger.info("Stopping %s" % self.key())
         self.cmd_queue.put({'quit': True})
         time.sleep(2*self.poll_time)
         if self.proc.is_alive():
@@ -77,13 +81,12 @@ class ReadJsonFile(object):
         if ft[0] == 'application/json':
             return open(filename)
         elif ft[1] == 'gzip':
-            return Gzip(filename)
+            return GzipFile(filename)
         return None
-
 
     @classmethod
     def read_json_file(cls, poll_time, in_queue, out_queue):
-
+        logger.info("Entered the child thread: %s" % cls.key())
         while True:
             d = cls.read_inqueue(in_queue)
             if cls.check_for_quit(d):

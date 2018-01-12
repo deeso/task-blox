@@ -1,0 +1,23 @@
+[dirchecker]
+    task = 'dirchecker'
+    name = 'suricata-logs-checker'
+    target-directory = '/var/logs/suricata/'
+    name-pattern = '.*eve-\d{4}-\d{2}-\d{2}-\d{2}:\d{2}\.json'
+    poll-time = 20
+
+[readjsonfiles]
+    task = 'readjsonfiles'
+    name = 'suricata-logs-reader'
+    poll-time = 20
+
+[elksubmitjson]
+    task = 'elksubmitjson'
+    name = 'suricata-logs-submitter'
+    poll-time = 20
+    host = 'docker-dev'
+    port = 5002
+
+[rmfiles]
+    task = 'rmfiles'
+    name = 'suricata-logs-remover'
+    poll-time = 20
