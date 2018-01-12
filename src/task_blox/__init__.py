@@ -1,7 +1,7 @@
-from network.elksubmitjson import ElkSubmitJson
-from os.dirchecker import DirChecker
-from os.rmfiles import RmFiles
-from parse.readjsonfile import ReadJsonFile
+from task_blox.network.elksubmitjson import ElkSubmitJson
+from task_blox.os.dirchecker import DirChecker
+from task_blox.os.rmfiles import RmFiles
+from task_blox.parse.readjsonfile import ReadJsonFile
 
 
 TASK_BLOX_MAPPER = {
