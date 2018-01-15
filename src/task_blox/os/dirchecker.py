@@ -108,12 +108,12 @@ class DirChecker(object):
             ffilter = Filter(name_pattern)
 
         d = cls.read_inqueue(in_queue)
-        if cls.check_for_quit(d):
+        if d is not None and cls.check_for_quit(d):
             return
 
         while True:
             d = cls.read_inqueue(in_queue)
-            if cls.check_for_quit(d):
+            if d is not None and cls.check_for_quit(d):
                 break
 
             files = cls.identify_files(target_dir, ffilter)
@@ -129,7 +129,7 @@ class DirChecker(object):
                     break
 
             d = cls.read_inqueue(in_queue)
-            if cls.check_for_quit(d):
+            if d is not None and cls.check_for_quit(d):
                 break
             time.sleep(poll_time)
 

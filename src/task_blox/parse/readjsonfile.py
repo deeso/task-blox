@@ -89,8 +89,12 @@ class ReadJsonFile(object):
         logger.info("Entered the child thread: %s" % cls.key())
         while True:
             d = cls.read_inqueue(in_queue)
-            if cls.check_for_quit(d):
+            if d is not None and cls.check_for_quit(d):
                 break
+
+            if d is None:
+                time.sleep(poll_time)
+                continue
 
             if 'filename' in d:
                 filename = d.get('filename', None)
@@ -114,8 +118,6 @@ class ReadJsonFile(object):
                                'filename': filename,
                                'status': 'complete'})
 
-            if in_queue.empty():
-                time.sleep(poll_time)
 
     @classmethod
     def from_toml(cls, toml_dict):

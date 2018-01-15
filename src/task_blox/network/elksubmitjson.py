@@ -100,7 +100,10 @@ class ElkSubmitJson(object):
 
         while True:
             d = cls.read_inqueue(in_queue)
-            if cls.check_for_quit(d):
+
+            if d is None:
+                time.sleep(poll_time)
+            elif cls.check_for_quit(d):
                 break
 
             status = 'success'
