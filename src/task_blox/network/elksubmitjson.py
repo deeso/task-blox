@@ -103,6 +103,7 @@ class ElkSubmitJson(object):
 
             if d is None:
                 time.sleep(poll_time)
+                continue
             elif cls.check_for_quit(d):
                 break
 
