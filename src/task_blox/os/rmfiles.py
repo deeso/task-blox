@@ -2,7 +2,7 @@ import os
 import shutil
 import time
 from multiprocessing import Queue, Process
-
+import traceback
 
 class RmFiles(object):
     KEY = 'RmFiles'
@@ -52,11 +52,11 @@ class RmFiles(object):
             self.proc.terminate()
         self.proc.join()
 
-    def add_filename(self, filename):
+    def add_filename(self, tid, filename):
         if not os.path.isdir(filename):
-            self.cmd_queue.put({'filename': filename})
+            self.cmd_queue.put({'filename': filename, 'tid': tid})
         else:
-            self.cmd_queue.put({'directory': filename})
+            self.cmd_queue.put({'directory': filename, 'tid': tid})
 
     @classmethod
     def read_inqueue(cls, queue):
@@ -80,31 +80,38 @@ class RmFiles(object):
 
         while True:
             d = cls.read_inqueue(in_queue)
-            if cls.check_for_quit(d):
+            if d is None:
+                time.sleep(poll_time)
+                continue
+            elif cls.check_for_quit(d):
                 break
 
             result = None
+            tid = d.get('tid', '')
             if 'filename' in d:
                 filename = d.get('filename', None)
                 if filename is not None:
-                    result = {'filename': filename}
+                    result = {'filename': filename, 'error': ''}
                     try:
                         os.remove(filename)
                         result['removed'] = True
                     except:
                         result['removed'] = False
+                        result['error'] = 'error: ' + traceback.format_exc()
             elif 'directory' in d:
                 directory = d.get('directory', None)
                 if directory is not None:
-                    result = {'directory': directory}
+                    result = {'directory': directory, 'error': ''}
                     try:
                         shutil.rmtree(directory)
                         result['removed'] = True
                     except:
                         result['removed'] = False
+                        result['error'] = 'error: ' + traceback.format_exc()
             else:
                 result = {'unknown': d, 'removed': False}
 
+            result['tid'] = tid
             out_queue.put(result)
             if in_queue.empty():
                 time.sleep(poll_time)
