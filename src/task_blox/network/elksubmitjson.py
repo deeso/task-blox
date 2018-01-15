@@ -2,6 +2,7 @@ import socket
 import time
 from multiprocessing import Queue, Process
 import json
+import traceback
 
 
 class ElkSubmitJson(object):
@@ -84,14 +85,16 @@ class ElkSubmitJson(object):
 
     @classmethod
     def send_udp_json_line(cls, host, port, json_data):
-        data = bytes(((json_data + '\n')).encode('utf-8'))
+        json_data_str = json.dumps(json_data)
+        data = bytes(((json_data_str + '\n')).encode('utf-8'))
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         sock.sendto(data, (host, port))
 
     @classmethod
     def send_udp_json_lines(cls, host, port, json_datas):
         for json_data in json_datas:
-            data = bytes(((json_data + '\n')).encode('utf-8'))
+            json_data_str = json.dumps(json_data)
+            data = bytes(((json_data_str + '\n')).encode('utf-8'))
             sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             sock.sendto(data, (host, port))
 
@@ -108,17 +111,16 @@ class ElkSubmitJson(object):
                 break
 
             status = 'success'
-            json_datas = d.get('json_datas', None)
+            json_datas = d.get('json_datas', [])
             json_data = d.get('json_data', None)
             if json_data is not None:
-                json_datas = [json_data, ]
+                json_datas = json_datas + [json_data, ]
 
             for json_data in json_datas:
                 try:
                     cls.send_udp_json_line(host, port, json_data)
                 except:
-                    status = 'error'
-                    break
+                    status = 'error: ' + traceback.format_exc()
 
             out_queue.put({'tid': d.get('tid', None),
                            'status': status})
