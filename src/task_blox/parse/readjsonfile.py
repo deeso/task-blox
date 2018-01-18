@@ -99,21 +99,24 @@ class ReadJsonFile(object):
             if 'filename' in d:
                 filename = d.get('filename', None)
                 json_lines = []
+                line_cnt = 0
                 infile = cls.open_file(filename)
                 if infile is not None:
-                    for line in infile.readlines():
-                        try:
-                            data = json.loads(line)
-                            json_lines.append(data)
-                            if len(json_lines) > 200:
-                                out_queue.put({'json_lines': json_lines,
-                                               'filename': filename,
-                                               'status': 'incomplete'})
-                                json_lines = []
-                        except:
-                            pass
+                    lines = infile.readlines()
                     infile.close()
-
+                    data = []
+                    try:
+                        data = [json.loads(_line.strip()) for _line in lines]
+                        line_cnt += len(data)
+                        json_lines = json_lines + data
+                        if len(json_lines) > 200:
+                            out_queue.put({'json_lines': json_lines,
+                                           'filename': filename,
+                                           'status': 'incomplete'})
+                            json_lines = []
+                    except:
+                        pass
+                logger.debug("%s processed %s lines from %s" % (cls.key(), line_cnt, filename))
                 out_queue.put({'json_lines': json_lines,
                                'filename': filename,
                                'status': 'complete'})
