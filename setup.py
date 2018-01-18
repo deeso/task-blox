@@ -3,6 +3,7 @@ from setuptools import setup, find_packages
 # configure the setup to install from specific repos and users
 
 DEPENDENCY_LINKS = [
+    "https://github.com/deeso/manipin-json/tarball/master#egg=manipin-json",
 ]
 
 DESC = 'Python configurable task library for common things'

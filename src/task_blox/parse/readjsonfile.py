@@ -118,7 +118,6 @@ class ReadJsonFile(object):
                                'filename': filename,
                                'status': 'complete'})
 
-
     @classmethod
     def from_toml(cls, toml_dict):
         poll_time = toml_dict.get('poll-time', 20)
