@@ -1,78 +1,26 @@
+from task_blox.base import BaseTask
 from task_blox.support.filter import Filter
-import os
-from multiprocessing import Process, Queue
+from task_blox import logger
 import time
+import os
 
 
-class DirChecker(object):
+class DirChecker(BaseTask):
     KEY = 'DirChecker'
 
-    @classmethod
-    def key(cls):
-        return cls.KEY.lower()
-
     def __init__(self, target_dir, name_pattern=None, poll_time=30, name=None):
+        super(DirChecker, self).__init__(name, poll_time)
         self.target_dir = target_dir
-        self.cmd_queue = Queue()
-        self.out_queue = Queue()
         self.name_pattern = name_pattern
 
-        self.name = name
+    def get_kwargs(self):
+        return {
+            'target_dir': self.target_dir,
+            'name_pattern': self.name_pattern,
+            'files_found': set()}
 
-        self.poll_time = poll_time
-        self.running = False
-        self.proc = None
-
-    def read_outqueue(self):
-        data = []
-        while not self.out_queue.empty():
-            data.append(self.out_queue.get())
-        return data
-
-    def start(self):
-        args = [
-            self.target_dir,
-            self.name_pattern,
-            self.poll_time,
-            self.cmd_queue,
-            self.out_queue
-        ]
-        self.proc = Process(target=self.check_dir, args=args)
-        self.proc.start()
-
-    def is_running(self):
-        if self.proc is None or not self.proc.is_alive():
-            return False
-        return True
-
-    def set_queues(self, cmd_queue, out_queue):
-        if not self.is_running():
-            self.cmd_queue = cmd_queue
-            self.out_queue = out_queue
-
-    def stop(self):
-        self.cmd_queue.put({'quit': True})
-        time.sleep(2*self.poll_time)
-        if self.proc.is_alive():
-            self.proc.terminate()
-        self.proc.join()
-
-    @classmethod
-    def read_inqueue(cls, queue):
-        if queue.empty():
-            return None
-        return queue.get()
-
-    @classmethod
-    def check_for_quit(cls, json_data):
-        quit = False
-        if json_data is None:
-            return quit
-
-        if 'quit' in json_data:
-            quit = True
-
-        return quit
+    # def get_target(self):
+    #     return self.check_dir
 
     @classmethod
     def is_fileopened(cls, fname):
@@ -86,51 +34,68 @@ class DirChecker(object):
         return None
 
     @classmethod
-    def identify_files(cls, target_directory, ffilter=None):
+    def identify_files(cls, target_directory, ffilter=None, files_found=set()):
         td = target_directory
         rfiles = [os.path.join(td, i) for i in os.listdir(td)]
-        files = []
+        results = []
 
         for f in rfiles:
 
             if ffilter is None or ffilter.matches(f):
-                if not cls.is_fileopened(f):
-                    files.append(f)
-        return sorted(files)
+                if not cls.is_fileopened(f) and f not in files_found:
+                    files_found.add(f)
+                    z = {'other': f}
+                    if os.path.isfile(f):
+                        z = {'filename': f}
+                    elif os.path.isfile(f):
+                        z = {'directory': f}
+                    results.append(z)
+        return results, files_found
+
+        def quick_check(name_dict):
+            return name_dict.values()[0] if len(name_dict) == 1 else ''
+        return sorted(results, key=quick_check), files_found
 
     @classmethod
-    def check_dir(cls, target_dir, name_pattern,
-                  poll_time, in_queue, out_queue):
+    def handle_message(cls, json_msg, **kargs):
+                    # target_dir=None,
+                    # name_pattern=None, files_found=set()):
+        logger.debug("%s Handling messages" % cls.key())
+        target_dir = kargs.get('target_dir', None)
+        name_pattern = kargs.get('name_pattern', None)
+        files_found = kargs.get('files_found', set())
+        ffilter = kargs.get('ffilter', None)
+        results = []
+        if target_dir is None:
+            m = "Unable to scan invalid directory: %s"
+            raise Exception(m % target_dir)
 
-        files_found = set()
         ffilter = None
-        if name_pattern is not None:
+        if name_pattern is not None and ffilter is None:
             ffilter = Filter(name_pattern)
+            kargs['ffilter'] = ffilter
+            logger.debug("Setting the ffilter karg value")
 
-        d = cls.read_inqueue(in_queue)
-        if d is not None and cls.check_for_quit(d):
-            return
+        results, files_found = cls.identify_files(target_dir, ffilter,
+                                                  files_found=files_found)
+        kargs['files_found'] = files_found
+        return results
 
+    @classmethod
+    def generic_task(cls, poll_time, in_queue, out_queue, *args, **kargs):
+        logger.info("Entered the child thread: %s" % cls.key())
         while True:
-            d = cls.read_inqueue(in_queue)
-            if d is not None and cls.check_for_quit(d):
+            json_msg = cls.read_queue(in_queue)
+            if json_msg is not None and cls.check_for_quit(json_msg):
                 break
 
-            files = cls.identify_files(target_dir, ffilter)
+            # if json_msg is None:
+            #     time.sleep(poll_time)
+            #     continue
 
-            for f in files:
-                if f in files_found:
-                    continue
-                files_found.add(f)
-                out_queue.put({'filename': f})
-
-                d = cls.read_inqueue(in_queue)
-                if cls.check_for_quit(d):
-                    break
-
-            d = cls.read_inqueue(in_queue)
-            if d is not None and cls.check_for_quit(d):
-                break
+            results = cls.handle_message({}, *args, **kargs)
+            cls.inserts_queue(out_queue, results)
+            cls.post_process_log(json_msg, results)
             time.sleep(poll_time)
 
     @classmethod

@@ -1,79 +1,31 @@
-import time
-from multiprocessing import Queue, Process
+from task_blox import logger
+from task_blox.base import BaseTask
+import os
+import traceback
 import json
 import mimetypes
 from gzip import GzipFile
-from task_blox import logger
 
 
-class ReadJsonFile(object):
+class ReadJsonFile(BaseTask):
     KEY = 'ReadJsonFile'
 
-    @classmethod
-    def key(cls):
-        return cls.KEY.lower()
-
     def __init__(self, poll_time=60, name=None):
-        self.cmd_queue = Queue()
-        self.out_queue = Queue()
+        super(ReadJsonFile, self).__init__(name, poll_time)
 
-        self.name = name
-        self.poll_time = poll_time
-        self.proc = None
+    def add_filename(self, filename, tid=None):
+        self.insert_inqueue({'filename': filename, 'tid': tid})
 
-    def read_outqueue(self):
-        data = []
-        while not self.out_queue.empty():
-            data.append(self.out_queue.get())
-        return data
+    def add_filenames(self, filenames, tid=None):
+        for filename in filenames:
+            self.add_filename(filename, tid)
 
-    def start(self):
-        logger.info("Starting %s" % self.key())
-        args = [
-            self.poll_time,
-            self.cmd_queue,
-            self.out_queue
-        ]
-        self.proc = Process(target=self.read_json_file, args=args)
-        self.proc.start()
-
-    def is_running(self):
-        if self.proc is None or not self.proc.is_alive():
-            return False
-        return True
-
-    def set_queues(self, cmd_queue, out_queue):
-        if not self.is_running():
-            self.cmd_queue = cmd_queue
-            self.out_queue = out_queue
-
-    def add_filename(self, filename):
-        self.cmd_queue.put({'filename': filename})
-
-    def stop(self):
-        logger.info("Stopping %s" % self.key())
-        self.cmd_queue.put({'quit': True})
-        time.sleep(2*self.poll_time)
-        if self.proc.is_alive():
-            self.proc.terminate()
-        self.proc.join()
-
-    @classmethod
-    def read_inqueue(cls, queue):
-        if queue.empty():
-            return None
-        return queue.get()
-
-    @classmethod
-    def check_for_quit(cls, json_data):
-        quit = False
-        if json_data is None:
-            return quit
-
-        if 'quit' in json_data:
-            quit = True
-
-        return quit
+    def add_json_msg(self, json_msg):
+        if 'filename' in json_msg or \
+           'directory' in json_msg:
+            self.insert_inqueue(json_msg)
+            return True
+        return False
 
     @classmethod
     def open_file(cls, filename):
@@ -85,41 +37,74 @@ class ReadJsonFile(object):
         return None
 
     @classmethod
-    def read_json_file(cls, poll_time, in_queue, out_queue):
-        logger.info("Entered the child thread: %s" % cls.key())
-        while True:
-            d = cls.read_inqueue(in_queue)
-            if d is not None and cls.check_for_quit(d):
-                break
+    def ingest_file(cls, filename, tid=None):
+        json_datas = []
+        status = 'failed'
+        infile = cls.open_file(filename)
+        results = []
+        if infile is not None:
 
-            if d is None:
-                time.sleep(poll_time)
-                continue
+            lines = infile.readlines()
+            infile.close()
+            try:
+                json_datas = [json.loads(_line.strip()) for _line in lines]
+                status = 'success'
+            except:
+                status = 'error: ' + traceback.format_exc()
 
-            if 'filename' in d:
-                filename = d.get('filename', None)
-                json_lines = []
-                line_cnt = 0
-                infile = cls.open_file(filename)
-                if infile is not None:
-                    lines = infile.readlines()
-                    infile.close()
-                    data = []
-                    try:
-                        data = [json.loads(_line.strip()) for _line in lines]
-                        line_cnt += len(data)
-                        json_lines = json_lines + data
-                        if len(json_lines) > 200:
-                            out_queue.put({'json_lines': json_lines,
-                                           'filename': filename,
-                                           'status': 'incomplete'})
-                            json_lines = []
-                    except:
-                        pass
-                logger.debug("%s processed %s lines from %s" % (cls.key(), line_cnt, filename))
-                out_queue.put({'json_lines': json_lines,
-                               'filename': filename,
-                               'status': 'complete'})
+        for jd in json_datas:
+            result = {'filename': filename,
+                      'tid': tid,
+                      'json_data': jd,
+                      'status': status}
+            results.append(result)
+
+        return results
+
+    @classmethod
+    def ingest_dir(cls, filename, tid=None):
+        filenames = [os.path.join(filename, i) for i in os.listdir(filename)]
+        results = []
+        for i in filenames:
+            results = results + cls.ingest_file(i, tid)
+        result = {'directory': filename,
+                  'tid': tid,
+                  'json_datas': None,
+                  'status': 'success'}
+        results.append(result)
+        return results
+
+    @classmethod
+    def handle_message(cls, json_msg, *args, **kargs):
+        results = []
+        filename = 'unknown'
+        tid = json_msg.get('tid', None)
+        if 'filename' in json_msg:
+            filename = json_msg.get('filename', None)
+            results = cls.ingest_file(filename, tid=tid)
+        elif 'directory' in json_msg:
+            filename = json_msg.get('directory', None)
+            results = cls.ingest_dir(filename, tid=tid)
+        else:
+            results = [{'other': str(json_msg), 'tid': tid,
+                        'json_datas': [],
+                        'status': 'failed unknown type'}]
+        return results
+
+    @classmethod
+    def post_process_log(cls, json_msg, results):
+        line_cnt = 0
+        for r in results:
+            line_cnt += len(r.get('json_datas', []))
+
+        filename = 'unknown'
+        if 'filename' in json_msg:
+            filename = json_msg['filename']
+        elif 'directory' in json_msg:
+            filename = json_msg['directory']
+
+        m = "%s processed %s lines from %s"
+        logger.debug(m % (cls.key(), line_cnt, filename))
 
     @classmethod
     def from_toml(cls, toml_dict):

@@ -1,120 +1,100 @@
+from task_blox.base import BaseTask
+from task_blox import logger
 import os
 import shutil
-import time
-from multiprocessing import Queue, Process
 import traceback
 
-class RmFiles(object):
+
+class RmFiles(BaseTask):
     KEY = 'RmFiles'
 
-    @classmethod
-    def key(cls):
-        return cls.KEY.lower()
-
     def __init__(self, poll_time=60, name=None):
-        self.cmd_queue = Queue()
-        self.out_queue = Queue()
-        self.name = name
-
-        self.poll_time = poll_time
-        self.running = False
-        self.proc = None
-
-    def read_outqueue(self):
-        data = []
-        while not self.out_queue.empty():
-            data.append(self.out_queue.get())
-        return data
-
-    def start(self):
-        args = [
-            self.poll_time,
-            self.cmd_queue,
-            self.out_queue
-        ]
-        self.proc = Process(target=self.rm_files, args=args)
-        self.proc.start()
-
-    def is_running(self):
-        if self.proc is None or not self.proc.is_alive():
-            return False
-        return True
-
-    def set_queues(self, cmd_queue, out_queue):
-        if not self.is_running():
-            self.cmd_queue = cmd_queue
-            self.out_queue = out_queue
-
-    def stop(self):
-        self.cmd_queue.put(True)
-        time.sleep(2*self.poll_time)
-        if self.proc.is_alive():
-            self.proc.terminate()
-        self.proc.join()
+        super(RmFiles, self).__init__(name, poll_time)
 
     def add_filename(self, tid, filename):
+        r = {}
         if not os.path.isdir(filename):
-            self.cmd_queue.put({'filename': filename, 'tid': tid})
+            r = {'filename': filename, 'tid': tid}
         else:
-            self.cmd_queue.put({'directory': filename, 'tid': tid})
+            r = {'directory': filename, 'tid': tid}
+        if len(r) > 0:
+            self.insert_inqueue(r)
+            return True
+        return False
+
+    def add_directory(self, tid, filename):
+        self.add_filename(tid, filename)
+
+    def add_json_msg(self, json_msg):
+        if 'filename' in json_msg or \
+           'directory' in json_msg:
+            self.insert_inqueue(json_msg)
+            return True
+        return False
 
     @classmethod
-    def read_inqueue(cls, queue):
-        if queue.empty():
-            return None
-        return queue.get()
+    def rm_filename(cls, filename, tid=None):
+        result = {'filename': filename, 'error': '', 'tid': tid}
+        try:
+            os.remove(filename)
+            result['removed'] = True
+        except:
+            result['removed'] = False
+            result['error'] = 'error: ' + traceback.format_exc()
+        return result
 
     @classmethod
-    def check_for_quit(cls, json_data):
-        quit = False
-        if json_data is None:
-            return quit
-
-        if 'quit' in json_data:
-            quit = True
-
-        return quit
+    def rm_directory(cls, filename, tid=None):
+        result = {'directory': filename, 'error': '', 'tid': tid}
+        try:
+            shutil.rmtree(filename)
+            result['removed'] = True
+        except:
+            result['removed'] = False
+            result['error'] = 'error: ' + traceback.format_exc()
+        return result
 
     @classmethod
-    def rm_files(cls, poll_time, in_queue, out_queue):
+    def rm_file(cls, label, name, tid=None):
+        default = {label: name,
+                   'error': 'unknown filetype',
+                   'removed': False}
 
-        while True:
-            d = cls.read_inqueue(in_queue)
-            if d is None:
-                time.sleep(poll_time)
-                continue
-            elif cls.check_for_quit(d):
-                break
+        if label == 'filename':
+            return cls.rm_filename(name, tid=tid)
+        elif label == 'directory':
+            return cls.rm_directory(name, tid=tid)
+        return default
 
-            result = None
-            tid = d.get('tid', '')
-            if 'filename' in d:
-                filename = d.get('filename', None)
-                if filename is not None:
-                    result = {'filename': filename, 'error': ''}
-                    try:
-                        os.remove(filename)
-                        result['removed'] = True
-                    except:
-                        result['removed'] = False
-                        result['error'] = 'error: ' + traceback.format_exc()
-            elif 'directory' in d:
-                directory = d.get('directory', None)
-                if directory is not None:
-                    result = {'directory': directory, 'error': ''}
-                    try:
-                        shutil.rmtree(directory)
-                        result['removed'] = True
-                    except:
-                        result['removed'] = False
-                        result['error'] = 'error: ' + traceback.format_exc()
-            else:
-                result = {'unknown': d, 'removed': False}
+    @classmethod
+    def handle_message(cls, json_msg, *args, **kargs):
+        tid = json_msg.get('tid', None)
+        label = 'unknown'
+        name = None
+        if 'filename' in json_msg:
+            name = json_msg.get('filename', None)
+        elif 'directory' in json_msg:
+            name = json_msg.get('directory', None)
+        else:
+            name = str(json_msg)
 
-            result['tid'] = tid
-            out_queue.put(result)
-            if in_queue.empty():
-                time.sleep(poll_time)
+        result = cls.rm_file(label, name, tid=tid)
+        return [result, ]
+
+    @classmethod
+    def post_process_log(cls, json_msg, results):
+        line_cnt = 0
+        for r in results:
+            line_cnt += len(r.get('json_datas', []))
+
+        filename = 'unknown'
+        if 'filename' in json_msg:
+            filename = json_msg['filename']
+        elif 'directory' in json_msg:
+            filename = json_msg['directory']
+
+        m = "%s removed %s"
+        logger.debug(m % (cls.key(), filename))
 
     @classmethod
     def from_toml(cls, toml_dict):
