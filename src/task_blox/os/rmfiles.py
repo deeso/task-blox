@@ -59,30 +59,21 @@ class RmFiles(BaseTask):
         return result
 
     @classmethod
-    def rm_file(cls, label, name, tid=None):
-        default = {label: name,
-                   'error': 'unknown filetype',
-                   'removed': False}
+    def rm_file(cls, json_msg, tid=None):
+        default = json_msg.copy()
+        default['error'] = 'unknown filetype'
+        default['removed'] = False
 
-        if label == 'filename':
-            return cls.rm_filename(name, tid=tid)
-        elif label == 'directory':
-            return cls.rm_directory(name, tid=tid)
+        if 'filename' in json_msg:
+            return cls.rm_filename(json_msg['filename'], tid=tid)
+        elif 'directory' in json_msg:
+            return cls.rm_directory(json_msg['directory'], tid=tid)
         return default
 
     @classmethod
     def handle_message(cls, json_msg, *args, **kargs):
         tid = json_msg.get('tid', None)
-        label = 'unknown'
-        name = None
-        if 'filename' in json_msg:
-            name = json_msg.get('filename', None)
-        elif 'directory' in json_msg:
-            name = json_msg.get('directory', None)
-        else:
-            name = str(json_msg)
-
-        result = cls.rm_file(label, name, tid=tid)
+        result = cls.rm_file(json_msg, tid=tid)
         return [result, ]
 
     @classmethod
@@ -92,13 +83,16 @@ class RmFiles(BaseTask):
             line_cnt += len(r.get('json_datas', []))
 
         filename = 'unknown'
+        error = json_msg.get('error', '')
+        status = json_msg.get('removed', False)
+
         if 'filename' in json_msg:
             filename = json_msg['filename']
         elif 'directory' in json_msg:
             filename = json_msg['directory']
 
-        m = "%s removed %s"
-        logger.debug(m % (cls.key(), filename))
+        m = "%s removed (%s) %s: %s"
+        logger.debug(m % (cls.key(), status, filename, error))
 
     @classmethod
     def from_toml(cls, toml_dict):
