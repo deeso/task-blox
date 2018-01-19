@@ -38,7 +38,9 @@ class RmFiles(BaseTask):
         try:
             os.remove(filename)
             result['removed'] = True
+            logger.debug("Removed filename %s from the OS" % filename)
         except:
+            logger.debug("Failed to remove filename %s from the OS" % filename)
             result['removed'] = False
             result['error'] = 'error: ' + traceback.format_exc()
         return result
@@ -49,7 +51,9 @@ class RmFiles(BaseTask):
         try:
             shutil.rmtree(filename)
             result['removed'] = True
+            logger.debug("Removed dir. %s from the OS" % filename)
         except:
+            logger.debug("Failed to remove dir. %s from the OS" % filename)
             result['removed'] = False
             result['error'] = 'error: ' + traceback.format_exc()
         return result

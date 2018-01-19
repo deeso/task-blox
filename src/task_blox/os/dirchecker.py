@@ -53,7 +53,12 @@ class DirChecker(BaseTask):
         return results, files_found
 
         def quick_check(name_dict):
-            return name_dict.values()[0] if len(name_dict) == 1 else ''
+            if 'filename' in name_dict:
+                return name_dict['filename']
+            elif 'directory' in name_dict:
+                return name_dict['filename']
+            return ''
+
         return sorted(results, key=quick_check), files_found
 
     @classmethod
@@ -88,10 +93,6 @@ class DirChecker(BaseTask):
             json_msg = cls.read_queue(in_queue)
             if json_msg is not None and cls.check_for_quit(json_msg):
                 break
-
-            # if json_msg is None:
-            #     time.sleep(poll_time)
-            #     continue
 
             results = cls.handle_message({}, *args, **kargs)
             cls.inserts_queue(out_queue, results)
