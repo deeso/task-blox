@@ -57,10 +57,12 @@ class ReadJsonFile(BaseTask):
                       'tid': tid,
                       'json_data': jd,
                       'status': status,
-                      'completed': False}
+                      'completed': False,
+                      'allowed_to_manip': False}
             results.append(result)
 
         results[-1]['completed'] = True
+        results[-1]['allowed_to_manip'] = True
         return results
 
     @classmethod

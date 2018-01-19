@@ -37,10 +37,10 @@ class DirChecker(BaseTask):
     def identify_files(cls, target_directory, ffilter=None, files_found=set()):
         td = target_directory
         rfiles = [os.path.join(td, i) for i in os.listdir(td)]
+        rfiles = sorted(rfiles)
         results = []
 
         for f in rfiles:
-
             if ffilter is None or ffilter.matches(f):
                 if not cls.is_fileopened(f) and f not in files_found:
                     files_found.add(f)
@@ -50,7 +50,6 @@ class DirChecker(BaseTask):
                     elif os.path.isfile(f):
                         z = {'directory': f}
                     results.append(z)
-        return results, files_found
 
         def quick_check(name_dict):
             if 'filename' in name_dict:
