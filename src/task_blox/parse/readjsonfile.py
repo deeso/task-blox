@@ -95,7 +95,8 @@ class ReadJsonFile(BaseTask):
     def post_process_log(cls, json_msg, results):
         line_cnt = 0
         for r in results:
-            line_cnt += len(r.get('json_datas', []))
+            if 'json_data' in r:
+                line_cnt += 1
 
         filename = 'unknown'
         if 'filename' in json_msg:

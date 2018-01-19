@@ -7,7 +7,7 @@ DEPENDENCY_LINKS = [
 ]
 
 DESC = 'Python configurable task library for common things'
-setup(name='json-file-consumer',
+setup(name='task-blox',
       version='1.0',
       description=DESC,
       author='adam pridgen',
