@@ -3,13 +3,16 @@ from task_blox.support.filter import Filter
 from task_blox import logger
 import time
 import os
+import logging
 
 
 class DirChecker(BaseTask):
     KEY = 'DirChecker'
 
-    def __init__(self, target_dir, name_pattern=None, poll_time=30, name=None):
-        super(DirChecker, self).__init__(name, poll_time)
+    def __init__(self, target_dir, name_pattern=None, poll_time=30, name=None,
+                 log_level=logging.INFO, logger_name=KEY.lower()):
+        super(DirChecker, self).__init__(name, poll_time,
+                                         log_level, logger_name)
         self.target_dir = target_dir
         self.name_pattern = name_pattern
 
@@ -104,6 +107,9 @@ class DirChecker(BaseTask):
         name_pattern = toml_dict.get('name-pattern', None)
         poll_time = toml_dict.get('poll-time', 20)
         name = toml_dict.get('name', None)
+        log_level = toml_dict.get('log-level', logging.INFO)
+        logger_name = toml_dict.get('logger-name', cls.key())
         return cls(target_directory,
                    name_pattern=name_pattern,
-                   poll_time=poll_time, name=name)
+                   poll_time=poll_time, name=name,
+                   log_level=log_level, logger_name=logger_name)

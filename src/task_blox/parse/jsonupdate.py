@@ -1,5 +1,6 @@
 from task_blox.base import BaseTask
 import traceback
+import logging
 import json
 import time
 from task_blox import logger
@@ -9,10 +10,6 @@ from manipin_json.enrichupsert import EnrichUpsertKeyedValue
 class KeyedJsonUpdate(BaseTask):
     KEY = 'KeyedJsonUpdate'
     DEFAULT_VALUE_KEY = EnrichUpsertKeyedValue.DEFAULT_VALUE_KEY
-
-    @classmethod
-    def key(cls):
-        return cls.KEY.lower()
 
     def __init__(self, poll_time=60, name=None, json_enrichers=[]):
         super(KeyedJsonUpdate, self).__init__(name, poll_time)
@@ -81,4 +78,8 @@ class KeyedJsonUpdate(BaseTask):
                                         default_value_key)
             json_enrichers.append(je)
 
-        return cls(poll_time=poll_time, name=name)
+        log_level = toml_dict.get('log-level', logging.INFO)
+        logger_name = toml_dict.get('logger-name', cls.key())
+
+        return cls(poll_time=poll_time, name=name,
+                   log_level=log_level, logger_name=logger_name)

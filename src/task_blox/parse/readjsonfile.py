@@ -5,13 +5,16 @@ import traceback
 import json
 import mimetypes
 from gzip import GzipFile
+import logging
 
 
 class ReadJsonFile(BaseTask):
     KEY = 'ReadJsonFile'
 
-    def __init__(self, poll_time=60, name=None):
-        super(ReadJsonFile, self).__init__(name, poll_time)
+    def __init__(self, poll_time=60, name=None,
+                 log_level=logging.INFO, logger_name=KEY.lower()):
+        super(ReadJsonFile, self).__init__(name, poll_time,
+                                           log_level, logger_name)
 
     def add_filename(self, filename, tid=None):
         self.insert_inqueue({'filename': filename, 'tid': tid})
@@ -115,4 +118,7 @@ class ReadJsonFile(BaseTask):
     def from_toml(cls, toml_dict):
         poll_time = toml_dict.get('poll-time', 20)
         name = toml_dict.get('name', None)
-        return cls(poll_time=poll_time, name=name)
+        log_level = toml_dict.get('log-level', logging.INFO)
+        logger_name = toml_dict.get('logger-name', cls.key())
+        return cls(poll_time=poll_time, name=name,
+                   log_level=log_level, logger_name=logger_name)

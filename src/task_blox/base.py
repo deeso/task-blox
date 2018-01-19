@@ -4,12 +4,15 @@ import toml
 import json
 import time
 from multiprocessing import Process, Queue
+import logging
 
 
 class BaseTask(object):
     KEY = 'BaseTask'
 
-    def __init__(self, name, poll_time):
+    def __init__(self, name, poll_time,
+                 log_level=logging.INFO, logger_name='task-blox'):
+        logger.init_logger(name=logger_name, log_level=log_level)
         self.in_queue = Queue()
         self.out_queue = Queue()
 

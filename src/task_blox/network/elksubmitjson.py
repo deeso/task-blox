@@ -2,13 +2,17 @@ from task_blox.base import BaseTask
 import socket
 import json
 import traceback
+import logging
 
 
 class ElkSubmitJson(BaseTask):
     KEY = 'ElkSubmitJson'
 
-    def __init__(self, host, port, poll_time=60, name=None):
-        super(ElkSubmitJson, self).__init__(name, poll_time)
+    def __init__(self, host, port, poll_time=60, name=None,
+                 log_level=logging.INFO, logger_name=KEY.lower()):
+        super(ElkSubmitJson, self).__init__(name, poll_time,
+                                            log_level, logger_name)
+
         self.host = host
         self.port = port
         self.proc = None
@@ -77,4 +81,7 @@ class ElkSubmitJson(BaseTask):
         port = toml_dict.get('port', 5002)
         poll_time = toml_dict.get('poll-time', 20)
         name = toml_dict.get('name', None)
-        return cls(host, port, poll_time=poll_time, name=name)
+        log_level = toml_dict.get('log-level', logging.INFO)
+        logger_name = toml_dict.get('logger-name', cls.key())
+        return cls(host, port, poll_time=poll_time, name=name,
+                   log_level=log_level, logger_name=logger_name)

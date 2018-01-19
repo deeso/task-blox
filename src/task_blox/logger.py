@@ -4,7 +4,7 @@ from task_blox import consts
 
 
 def init_logger(name=consts.NAME,
-                log_level=logging.DEBUG,
+                log_level=logging.INFO,
                 logging_fmt=consts.LOGGING_FORMAT):
 
     if name != consts.NAME and consts.LOGGER is None:
