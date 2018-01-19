@@ -56,9 +56,11 @@ class ReadJsonFile(BaseTask):
             result = {'filename': filename,
                       'tid': tid,
                       'json_data': jd,
-                      'status': status}
+                      'status': status,
+                      'completed': False}
             results.append(result)
 
+        results[-1]['completed'] = True
         return results
 
     @classmethod
