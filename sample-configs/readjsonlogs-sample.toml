@@ -1,4 +1,4 @@
 [readjsonfiles]
-    task = 'readjsonfiles'
+    task = 'readjsonfile'
     name = 'suricata-logs'
     poll-time = 20

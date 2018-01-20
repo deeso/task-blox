@@ -6,7 +6,7 @@
     poll-time = 20
 
 [readjsonfiles]
-    task = 'readjsonfiles'
+    task = 'readjsonfile'
     name = 'suricata-logs-reader'
     poll-time = 20
 

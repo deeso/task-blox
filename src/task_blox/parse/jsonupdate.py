@@ -4,7 +4,7 @@ import logging
 import json
 import time
 from task_blox import logger
-from manipin_json.enrichupsert import EnrichUpsertKeyedValue
+from manipin_json.upsertwithvaluedict import UpsertWithKeyedValueDict
 
 
 class KeyedJsonUpdate(BaseTask):
@@ -73,9 +73,9 @@ class KeyedJsonUpdate(BaseTask):
             value_dict = block.get('value-dict')
             dk = cls.DEFAULT_VALUE_KEY
             default_value_key = block.get('default-value-key', dk)
-            je = EnrichUpsertKeyedValue(dpath_check, dpath_upsert,
-                                        dpath_extract_key, value_dict,
-                                        default_value_key)
+            je = UpsertWithKeyedValueDict(dpath_check, dpath_upsert,
+                                          dpath_extract_key, value_dict,
+                                          default_value_key)
             json_enrichers.append(je)
 
         log_level = toml_dict.get('log-level', logging.INFO)

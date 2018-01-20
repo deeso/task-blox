@@ -1,0 +1,20 @@
+
+[jsonupdates]
+    [jsonupdates.enrich-vlans]
+    name = 'enrich-vlans'
+    poll-time = 20
+    log-level = 20
+    logger-name = 'jsonupdate-loggger'
+    [jsonupdates.enrich-vlans.json-enrichers.vlans]
+        name = 'vlan-insert'
+        dpath-check = 'vlan'
+        dpath-upsert =  'vlan'
+        dpath-extract-key = 'vlan'
+        default-value-key = 'dk1'
+        [jsonupdates.enrich-vlans.json-enrichers.vlans.value-dict]
+            1 = 'admin'
+            2 = 'media'
+            3 = 'voice'
+            4 = 'production'
+            100 = 'dmz'
+            UNKNOWN = 'unknown'
