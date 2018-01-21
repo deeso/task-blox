@@ -9,10 +9,13 @@ from manipin_json.upsertwithvaluedict import UpsertWithKeyedValueDict
 
 class KeyedJsonUpdate(BaseTask):
     KEY = 'KeyedJsonUpdate'
-    DEFAULT_VALUE_KEY = EnrichUpsertKeyedValue.DEFAULT_VALUE_KEY
+    DEFAULT_VALUE_KEY = UpsertWithKeyedValueDict.DEFAULT_VALUE_KEY
 
-    def __init__(self, poll_time=60, name=None, json_enrichers=[]):
-        super(KeyedJsonUpdate, self).__init__(name, poll_time)
+    def __init__(self, poll_time=60, name=None, json_enrichers=[],
+                 log_level=logging.DEBUG, logger_name=KEY.lower()):
+        super(KeyedJsonUpdate, self).__init__(name, poll_time,
+                                              log_level=log_level,
+                                              logger_name=logger_name)
         self.json_enrichers = json_enrichers
 
     def get_kwargs(self):
@@ -64,6 +67,9 @@ class KeyedJsonUpdate(BaseTask):
         poll_time = toml_dict.get('poll-time', 20)
         name = toml_dict.get('name', None)
 
+        log_level = toml_dict.get('log-level', logging.INFO)
+        logger_name = toml_dict.get('logger-name', cls.key())
+
         enrichers_blocks = toml_dict.get('json-enrichers', {})
         json_enrichers = []
         for name, block in enrichers_blocks.items():
@@ -78,8 +84,6 @@ class KeyedJsonUpdate(BaseTask):
                                           default_value_key)
             json_enrichers.append(je)
 
-        log_level = toml_dict.get('log-level', logging.INFO)
-        logger_name = toml_dict.get('logger-name', cls.key())
-
         return cls(poll_time=poll_time, name=name,
-                   log_level=log_level, logger_name=logger_name)
+                   log_level=log_level, logger_name=logger_name,
+                   json_enrichers=json_enrichers)

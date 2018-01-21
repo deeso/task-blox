@@ -1,20 +1,40 @@
-
 [jsonupdates]
-    [jsonupdates.enrich-vlans]
-    name = 'enrich-vlans'
+    name = 'vlan-name'
     poll-time = 20
     log-level = 20
     logger-name = 'jsonupdate-loggger'
-    [jsonupdates.enrich-vlans.json-enrichers.vlans]
-        name = 'vlan-insert'
+    [jsonupdates.json-enrichers.vlan-name]
+        name = 'vlan-name'
         dpath-check = 'vlan'
-        dpath-upsert =  'vlan'
+        dpath-upsert =  'vlan-name'
         dpath-extract-key = 'vlan'
-        default-value-key = 'dk1'
-        [jsonupdates.enrich-vlans.json-enrichers.vlans.value-dict]
-            1 = 'admin'
-            2 = 'media'
-            3 = 'voice'
-            4 = 'production'
-            100 = 'dmz'
-            UNKNOWN = 'unknown'
+        default-value-key = 'UNKNOWN'
+        [jsonupdates.json-enrichers.vlan-name.value-dict]
+            1 = "linkin"
+            2 = "offices"
+            3 = "production"
+            4 = "dmz"
+
+    [jsonupdates.json-enrichers.router-nic]
+        name = 'router-nic'
+        dpath-check = 'vlan'
+        dpath-upsert =  'router-nic'
+        dpath-extract-key = 'vlan'
+        default-value-key = 'UNKNOWN'
+        [jsonupdates.json-enrichers.router-nic.value-dict]
+            1 = "vtnet2"
+            2 = "vtnet1"
+            3 = "vtnet2"
+            4 = "vtnet3"
+
+    [jsonupdates.json-enrichers.router-nic-name]
+        name = 'router-nic-name'
+        dpath-check = 'vlan'
+        dpath-upsert =  'router-nic-name'
+        dpath-extract-key = 'vlan'
+        default-value-key = 'UNKNOWN'
+        [jsonupdates.json-enrichers.router-nic-name.value-dict]
+            1 = "wan"
+            2 = "lan"
+            3 = "opt1"
+            4 = "lan"
