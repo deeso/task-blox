@@ -75,15 +75,7 @@ class KeyedJsonUpdate(BaseTask):
         enrichers_blocks = toml_dict.get('json-enrichers', {})
         json_enrichers = []
         for name, block in enrichers_blocks.items():
-            dpath_check = block.get('dpath-check', None)
-            dpath_upsert = block.get('dpath-upsert', None)
-            dpath_extract_key = block.get('dpath-extract-key', None)
-            value_dict = block.get('value-dict')
-            dk = cls.DEFAULT_VALUE_KEY
-            default_value_key = block.get('default-value-key', dk)
-            je = UpsertWithKeyedValueDict(dpath_check, dpath_upsert,
-                                          dpath_extract_key, value_dict,
-                                          default_value_key)
+            je = UpsertWithKeyedValueDict.from_toml(block)
             json_enrichers.append(je)
 
         return cls(poll_time=poll_time, name=name,
