@@ -62,7 +62,7 @@ class KeyedJsonUpdate(BaseTask):
         return results
 
     @classmethod
-    def from_toml(cls, in_toml_dict):
+    def parse_toml(cls, in_toml_dict):
         # TODO update parsing process here
         toml_dict = in_toml_dict[cls.key()] if cls.key() in in_toml_dict \
                                             else in_toml_dict
@@ -75,7 +75,7 @@ class KeyedJsonUpdate(BaseTask):
         enrichers_blocks = toml_dict.get('json-enrichers', {})
         json_enrichers = []
         for name, block in enrichers_blocks.items():
-            je = UpsertWithKeyedValueDict.from_toml(block)
+            je = UpsertWithKeyedValueDict.parse_toml(block)
             json_enrichers.append(je)
 
         return cls(poll_time=poll_time, name=name,

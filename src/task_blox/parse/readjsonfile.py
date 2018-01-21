@@ -115,7 +115,7 @@ class ReadJsonFile(BaseTask):
         logger.debug(m % (cls.key(), line_cnt, filename))
 
     @classmethod
-    def from_toml(cls, toml_dict):
+    def parse_toml(cls, toml_dict):
         poll_time = toml_dict.get('poll-time', 20)
         name = toml_dict.get('name', None)
         log_level = toml_dict.get('log-level', logging.INFO)

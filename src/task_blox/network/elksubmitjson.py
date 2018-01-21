@@ -76,7 +76,7 @@ class ElkSubmitJson(BaseTask):
         return cls.send_udp_json_lines(host, port, json_datas, tid)
 
     @classmethod
-    def from_toml(cls, toml_dict):
+    def parse_toml(cls, toml_dict):
         host = toml_dict.get('host', '')
         port = toml_dict.get('port', 5002)
         poll_time = toml_dict.get('poll-time', 20)

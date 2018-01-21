@@ -102,7 +102,7 @@ class DirChecker(BaseTask):
             time.sleep(poll_time)
 
     @classmethod
-    def from_toml(cls, toml_dict):
+    def parse_toml(cls, toml_dict):
         target_directory = toml_dict.get('target-directory', None)
         name_pattern = toml_dict.get('name-pattern', None)
         poll_time = toml_dict.get('poll-time', 20)

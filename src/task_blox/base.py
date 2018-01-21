@@ -173,9 +173,9 @@ class BaseTask(object):
         return True
 
     @classmethod
-    def from_toml(cls, toml_dict):
+    def parse_toml(cls, toml_dict):
         return cls('basetask default', 100000000)
 
     @classmethod
-    def from_toml_file(cls, filename):
+    def parse_toml_file(cls, filename):
         return cls(toml.load(open(filename)))
