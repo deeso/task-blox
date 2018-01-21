@@ -11,30 +11,30 @@
         dpath-extract-key = 'vlan'
         default-value-key = 'UNKNOWN'
         [jsonupdates.json-enrichers.vlan-name.value-dict]
-            1 = "linkin"
+            1 = "link_in"
             2 = "offices"
             3 = "production"
             4 = "dmz"
 
-    [jsonupdates.json-enrichers.router-nic]
-        name = 'router-nic'
+    [jsonupdates.json-enrichers.pfsense-nic]
+        name = 'pfsense-nic'
         dpath-check = 'vlan'
-        dpath-upsert =  'router-nic'
+        dpath-upsert =  'pfsense-nic'
         dpath-extract-key = 'vlan'
         default-value-key = 'UNKNOWN'
-        [jsonupdates.json-enrichers.router-nic.value-dict]
+        [jsonupdates.json-enrichers.pfsense-nic.value-dict]
             1 = "vtnet2"
             2 = "vtnet1"
             3 = "vtnet2"
             4 = "vtnet3"
 
-    [jsonupdates.json-enrichers.router-nic-name]
-        name = 'router-nic-name'
+    [jsonupdates.json-enrichers.pfsense-nic-name]
+        name = 'pfsense-nic-name'
         dpath-check = 'vlan'
-        dpath-upsert =  'router-nic-name'
+        dpath-upsert =  'pfsense-nic-name'
         dpath-extract-key = 'vlan'
         default-value-key = 'UNKNOWN'
-        [jsonupdates.json-enrichers.router-nic-name.value-dict]
+        [jsonupdates.json-enrichers.pfsense-nic-name.value-dict]
             1 = "wan"
             2 = "lan"
             3 = "opt1"

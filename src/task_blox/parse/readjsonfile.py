@@ -64,8 +64,9 @@ class ReadJsonFile(BaseTask):
                       'allowed_to_manip': False}
             results.append(result)
 
-        results[-1]['completed'] = True
-        results[-1]['allowed_to_manip'] = True
+        if len(results) > 0:
+            results[-1]['completed'] = True
+            results[-1]['allowed_to_manip'] = True
         return results
 
     @classmethod
