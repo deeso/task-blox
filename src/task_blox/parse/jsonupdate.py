@@ -1,4 +1,5 @@
 from manipin_json.upsertwithvaluedict import UpsertWithKeyedValueDict
+from task_blox.logger import logger
 from task_blox.base import BaseTask
 import traceback
 import logging
@@ -50,9 +51,13 @@ class KeyedJsonUpdate(BaseTask):
             json_datas = json_datas + [json_data, ]
 
         results = []
+        m = "performing enrichment on %d records" % len(json_datas)
+        logger.debug(m)
         for json_data in json_datas:
             result = cls.perform_json_erichment(json_data, jes, tid=tid)
+            print (json_data)
             results.append(result)
+        print (results)
         return results
 
     @classmethod
