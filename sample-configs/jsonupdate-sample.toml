@@ -1,41 +1,60 @@
-[jsonupdates]
-    task = 'jsonupdate'
-    name = 'enrich-vlan-info'
+[json-file-consumer.jsonupdates]
+    task = 'keyedjsonupdate'
+    name = 'enrich-event-info'
     poll-time = 20
     log-level = 20
     logger-name = 'jsonupdate-loggger'
-    [jsonupdates.json-enrichers.vlan-name]
+    [json-file-consumer.jsonupdates.json-enrichers.vlan-name]
         name = 'vlan-name'
         dpath-check = 'vlan'
         dpath-upsert =  'vlan-name'
         dpath-extract-key = 'vlan'
         default-value-key = 'UNKNOWN'
-        [jsonupdates.json-enrichers.vlan-name.value-dict]
-            1 = "link_in"
-            2 = "offices"
+        [json-file-consumer.jsonupdates.json-enrichers.vlan-name.value-dict]
+            1 = "management"
+            2 = "dmz"
             3 = "production"
-            4 = "dmz"
+            4 = "voice"
+            5 = "wireless"
+            UNKNOWN = "UNKNOWN"
 
-    [jsonupdates.json-enrichers.pfsense-nic]
-        name = 'pfsense-nic'
+    [json-file-consumer.jsonupdates.json-enrichers.router-nic]
+        name = 'router-nic'
         dpath-check = 'vlan'
-        dpath-upsert =  'pfsense-nic'
+        dpath-upsert =  'router-nic'
         dpath-extract-key = 'vlan'
         default-value-key = 'UNKNOWN'
-        [jsonupdates.json-enrichers.pfsense-nic.value-dict]
-            1 = "vtnet2"
+        [json-file-consumer.jsonupdates.json-enrichers.router-nic.value-dict]
             2 = "vtnet1"
             3 = "vtnet2"
-            4 = "vtnet3"
+            4 = "vtnet2"
+            5 = "vtnet3"
+            UNKNOWN = "UNKNOWN"
 
-    [jsonupdates.json-enrichers.pfsense-nic-name]
-        name = 'pfsense-nic-name'
+    [json-file-consumer.jsonupdates.json-enrichers.router-nic-name]
+        name = 'router-nic-name'
         dpath-check = 'vlan'
-        dpath-upsert =  'pfsense-nic-name'
+        dpath-upsert =  'router-nic-name'
         dpath-extract-key = 'vlan'
         default-value-key = 'UNKNOWN'
-        [jsonupdates.json-enrichers.pfsense-nic-name.value-dict]
+        [json-file-consumer.jsonupdates.json-enrichers.router-nic-name.value-dict]
             1 = "wan"
-            2 = "lan"
-            3 = "opt1"
+            2 = "opt1"
+            3 = "lan"
             4 = "lan"
+            5 = "opt2"
+            UNKNOWN = "UNKNOWN"
+
+    [json-file-consumer.jsonupdates.json-enrichers.nsm-nic-tap]
+        name = 'nsm-nic-tap'
+        dpath-check = 'in_iface'
+        dpath-upsert =  'router-nic-tap'
+        dpath-extract-key = 'in_iface'
+        default-value-key = 'UNKNOWN'
+        [json-file-consumer.jsonupdates.json-enrichers.nsm-nic-tap.value-dict]
+            ens2 = "vtnet0"
+            ens3 = "vtnet1"
+            ens4 = "vtnet2"
+            ens4 = "vtnet3"
+            ens5 = "vtnet4"
+            UNKNOWN = "UNKNOWN"

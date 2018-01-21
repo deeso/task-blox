@@ -18,9 +18,6 @@ class KeyedJsonUpdate(BaseTask):
     def get_kwargs(self):
         return {'json_enrichers': self.json_enrichers}
 
-    def get_target(self):
-        return self.enrich_json_values
-
     def add_json_data(self, tid, json_data):
         self.insert_inqueue({'json_data': json_data, 'tid': tid})
 
