@@ -1,5 +1,6 @@
 [jsonupdates]
-    name = 'vlan-name'
+    task = 'jsonupdate'
+    name = 'enrich-vlan-info'
     poll-time = 20
     log-level = 20
     logger-name = 'jsonupdate-loggger'
