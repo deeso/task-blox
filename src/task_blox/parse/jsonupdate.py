@@ -62,8 +62,10 @@ class KeyedJsonUpdate(BaseTask):
         return results
 
     @classmethod
-    def from_toml(cls, toml_dict):
+    def from_toml(cls, in_toml_dict):
         # TODO update parsing process here
+        toml_dict = in_toml_dict[cls.key()] if cls.key() in in_toml_dict \
+                                            else in_toml_dict
         poll_time = toml_dict.get('poll-time', 20)
         name = toml_dict.get('name', None)
 
