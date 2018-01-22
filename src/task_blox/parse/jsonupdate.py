@@ -1,5 +1,5 @@
 from manipin_json.upsertwithvaluedict import UpsertWithKeyedValueDict
-from task_blox.logger import logger
+from task_blox import logger
 from task_blox.base import BaseTask
 import traceback
 import logging
