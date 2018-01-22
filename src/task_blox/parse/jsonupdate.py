@@ -60,7 +60,7 @@ class KeyedJsonUpdate(BaseTask):
 
         results = []
         m = "performing enrichment on %d records" % len(json_datas)
-        logger.info(m)
+        logger.debug(m)
         for json_data in json_datas:
             result = cls.perform_json_erichment(json_data, jes, tid=tid)
             # print(json_data)
