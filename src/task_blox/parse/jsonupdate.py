@@ -65,7 +65,7 @@ class KeyedJsonUpdate(BaseTask):
             result = cls.perform_json_erichment(json_data, jes, tid=tid)
             # print(json_data)
             results.append(result)
-        print("Handling %s in jsu" % json_msg)
+        # print("Handling %s in jsu" % json_msg)
         return results
 
     @classmethod
