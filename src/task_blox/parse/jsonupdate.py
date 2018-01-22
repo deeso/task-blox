@@ -49,7 +49,7 @@ class KeyedJsonUpdate(BaseTask):
 
     @classmethod
     def handle_message(cls, json_msg, *args, **kargs):
-        print("Handling %s in jsu" % json_msg)
+        # print("Handling %s in jsu" % json_msg)
         tid = json_msg.get('tid', None)
         jes = kargs.get('json_enrichers', [])
 
@@ -63,9 +63,9 @@ class KeyedJsonUpdate(BaseTask):
         logger.info(m)
         for json_data in json_datas:
             result = cls.perform_json_erichment(json_data, jes, tid=tid)
-            print(json_data)
+            # print(json_data)
             results.append(result)
-        print(results)
+        print("Handling %s in jsu" % json_msg)
         return results
 
     @classmethod
