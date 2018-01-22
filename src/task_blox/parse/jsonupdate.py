@@ -44,6 +44,7 @@ class KeyedJsonUpdate(BaseTask):
                 status = 'error: ' + traceback.format_exc()
 
             results[je.name] = {'result': r, 'status': status}
+            logger.debug(", ".join(["%s %s and in json_data: %s" % (k, v['status'], k in json_data) for k, v in results.items()]))
         return {'results': results, 'status': status,
                 'json_data': json_data, 'tid': tid}
 

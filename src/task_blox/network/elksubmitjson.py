@@ -1,4 +1,5 @@
 from task_blox.base import BaseTask
+from task_blox import logger
 import socket
 import json
 import traceback
@@ -38,8 +39,10 @@ class ElkSubmitJson(BaseTask):
     def add_json_msg(self, json_msg):
         if 'json_data' in json_msg or \
            'json_datas' in json_msg:
+            logger.debug('adding message to elksubmitjson')
             self.insert_inqueue(json_msg)
             return True
+        logger.debug('failed adding message to elksubmitjson')
         return False
 
     @classmethod
@@ -60,8 +63,10 @@ class ElkSubmitJson(BaseTask):
                 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
                 sock.sendto(data, (host, port))
                 status = 'success'
+                logger.debug(cls.key() + ": %s:%s " %(host, port) + status)
             except:
                 status = 'error: ' + traceback.format_exc()
+                logger.debug(cls.key() + ": %s:%s " %(host, port) + status)
 
             results.append({'tid': tid, 'status': status})
         return results
