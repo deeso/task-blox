@@ -42,6 +42,7 @@ class KeyedJsonUpdate(BaseTask):
 
     @classmethod
     def handle_message(cls, json_msg, *args, **kargs):
+        print("Handling %s in jsu" % json_msg)
         tid = json_msg.get('tid', None)
         jes = kargs.get('json_enrichers', [])
 
