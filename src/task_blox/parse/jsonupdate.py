@@ -19,6 +19,13 @@ class KeyedJsonUpdate(BaseTask):
     def get_kwargs(self):
         return {'json_enrichers': self.json_enrichers}
 
+    def add_json_msg(self, json_msg):
+        if 'json_data' in json_msg or \
+           'json_datas' in json_msg:
+            self.insert_inqueue(json_msg)
+            return True
+        return False
+
     def add_json_data(self, tid, json_data):
         self.insert_inqueue({'json_data': json_data, 'tid': tid})
 
@@ -53,7 +60,7 @@ class KeyedJsonUpdate(BaseTask):
 
         results = []
         m = "performing enrichment on %d records" % len(json_datas)
-        logger.debug(m)
+        logger.info(m)
         for json_data in json_datas:
             result = cls.perform_json_erichment(json_data, jes, tid=tid)
             print(json_data)

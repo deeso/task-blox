@@ -40,7 +40,7 @@ class BaseTask(object):
         return cls.KEY.lower()
 
     def add_json_msg(self, json_msg):
-        return False
+        raise Exception("Not implemented")
 
     def set_queues(self, in_queue, out_queue):
         if not self.is_running():
