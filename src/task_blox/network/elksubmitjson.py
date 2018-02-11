@@ -10,13 +10,17 @@ class ElkSubmitJson(BaseTask):
     KEY = 'ElkSubmitJson'
 
     def __init__(self, host, port, poll_time=60, name=None,
-                 log_level=logging.INFO, logger_name=KEY.lower()):
+                 log_level=logging.INFO, logger_name=KEY.lower(), mtype=None):
         super(ElkSubmitJson, self).__init__(name, poll_time,
                                             log_level, logger_name)
 
         self.host = host
         self.port = port
         self.proc = None
+        self.mtype = mtype
+
+    def get_kwargs(self):
+        return {'mtype': self.mtype}
 
     def get_args(self):
         return [
@@ -53,11 +57,13 @@ class ElkSubmitJson(BaseTask):
         sock.sendto(data, (host, port))
 
     @classmethod
-    def send_udp_json_lines(cls, host, port, json_datas, tid=None):
+    def send_udp_json_lines(cls, host, port, json_datas, tid=None, mtype=None):
         results = []
         for json_data in json_datas:
             status = 'error: unknown'
             try:
+                if mtype is not None:
+                    json_data['type'] = mtype
                 json_data_str = json.dumps(json_data)
                 data = bytes(((json_data_str + '\n')).encode('utf-8'))
                 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -74,11 +80,12 @@ class ElkSubmitJson(BaseTask):
     @classmethod
     def handle_message(cls, json_msg, host, port, **kargs):
         tid = json_msg.get('tid', None)
+        mtype = kargs.get('mtype', None)
         json_datas = json_msg.get('json_datas', [])
         json_data = json_msg.get('json_data', None)
         if json_data is not None:
             json_datas.append(json_data)
-        return cls.send_udp_json_lines(host, port, json_datas, tid)
+        return cls.send_udp_json_lines(host, port, json_datas, tid, mtype=mtype)
 
     @classmethod
     def parse_toml(cls, toml_dict):
