@@ -93,7 +93,8 @@ class ElkSubmitJson(BaseTask):
         port = toml_dict.get('port', 5002)
         poll_time = toml_dict.get('poll-time', 20)
         name = toml_dict.get('name', None)
+        mtype = toml_dict.get('mtype', None)
         log_level = toml_dict.get('log-level', logging.INFO)
         logger_name = toml_dict.get('logger-name', cls.key())
         return cls(host, port, poll_time=poll_time, name=name,
-                   log_level=log_level, logger_name=logger_name)
+                   log_level=log_level, logger_name=logger_name, mtype=mtype)
