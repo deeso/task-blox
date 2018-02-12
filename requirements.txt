@@ -1,4 +1,4 @@
 toml
 regex
-psycopg2
+psycopg2-binary
 https://github.com/deeso/manipin-json/tarball/master#egg=manipin-json

@@ -1,0 +1,11 @@
+[json-file-consumer.pgsubmitjsonnc]
+    task = 'pgsubmitjsonnc'
+    poll-time = 20
+    host = '127.0.0.1'
+    port = 5432
+    database = 'securitylogs'
+    table = 'suricata'
+    column = 'json_str'
+    username = 'postgres'
+    password = ''
+    log-level = 20 # INFO
