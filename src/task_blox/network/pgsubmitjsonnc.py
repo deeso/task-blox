@@ -10,6 +10,7 @@ import psycopg2
 class PGSubmitJsonNC(BaseTask):
     KEY = 'PGSubmitJsonNC'
     INSERT_STMT = "INSERT into {table} ({column}) VALUES ('{json_str}'::jsonb)"
+    INSERT_MANY_STMT = "INSERT into {table} ({column}) VALUES ('{{json_str}}'::jsonb)"
     SELECT_STMT = "SELECT * from {table}"
 
     def __init__(self, host, port, database, table, column,
@@ -80,7 +81,7 @@ class PGSubmitJsonNC(BaseTask):
                                     password=password)
             return conn
         except:
-            return None
+            raise
 
     @classmethod
     def insert_json(cls, pg_conn, table, column, json_data):
@@ -91,28 +92,38 @@ class PGSubmitJsonNC(BaseTask):
         try:
             cur = pg_conn.cursor()
             cur.execute(stmt)
+            return True
         except:
-            return None
+            raise
 
     @classmethod
     def postgress_insert_json(cls, host, port, database, table, column,
                               username, password, json_datas, tid=None):
         results = []
+        pg_conn = cls.connect_postgres(host, port, database,
+                                       username, password)
         for json_data in json_datas:
             status = 'error: connection failed'
             try:
-                pg_conn = cls.connect_postgres(host, port, database,
-                                               username, password)
                 status = "error: failed to insert json into %s:%s"
                 status = status % (table, column)
-                cls.insert_json(pg_conn, table, column, json_data)
-                status = 'success'
+                r = cls.insert_json(pg_conn, table, column, json_data)
+                if not r:
+                    status = 'error: ' + traceback.format_exc()
+                else:
+                    status = 'success'
                 logger.debug(cls.key() + ": %s:%s " % (host, port) + status)
+                pg_conn.commit()
             except:
                 status = 'error: ' + traceback.format_exc()
                 logger.debug(cls.key() + ": %s:%s " % (host, port) + status)
+                pg_conn.rollback()
 
             results.append({'tid': tid, 'status': status})
+        try:
+            pg_conn.close()
+        except:
+            pass
         return results
 
     @classmethod
