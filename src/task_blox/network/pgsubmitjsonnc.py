@@ -16,7 +16,7 @@ class PGSubmitJsonNC(BaseTask):
                  poll_time=60, name=None, username='postgres', password=None,
                  log_level=logging.INFO, logger_name=KEY.lower()):
         super(PGSubmitJsonNC, self).__init__(name, poll_time,
-                                                   log_level, logger_name)
+                                             log_level, logger_name)
 
         self.host = host
         self.port = port
@@ -87,7 +87,7 @@ class PGSubmitJsonNC(BaseTask):
         fmt_kargs = {'table': table,
                      'column': column,
                      'json_str': json.dumps(json_data)}
-        stmt = cls.INSERT_STMT.formt(**fmt_kargs)
+        stmt = cls.INSERT_STMT.format(**fmt_kargs)
         try:
             cur = pg_conn.cursor()
             cur.execute(stmt)
